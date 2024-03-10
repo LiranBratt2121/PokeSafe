@@ -2,18 +2,17 @@ import time
 from servo import Servo
 from picozero import Button
 
-BUTTON_PORT = 5
+BUTTON_PORT = 6
 SERVO_PORT = 16
 LIMIT_SWITCH_PORT = 22
 
-NORMALY_OPEN = False
-DELAY = 0.5 #seconds
+DELAY = 1  # Seconds
 START = 20
-END = START+90
+END = START + 90
 
+should_open = True
 
 servo = Servo(pin_id=SERVO_PORT)
-
 limit_switch = Button(BUTTON_PORT)
 
 def rotate(position: int) -> None:
@@ -22,21 +21,7 @@ def rotate(position: int) -> None:
 def sleep(duration: int) -> None:
     time.sleep(duration)
 
-def run_servo_routine() -> None:
-    rotate(START)
-    sleep(DELAY)
-    rotate(END)
-    sleep(DELAY)
-
-def toggle_servo() -> None:
-    if (place == END):
-        rotate(START)
-        place = START
-    else:
-        rotate(END)
-        place = END
-
-def rotate_to_end() -> None:
+def rotate_to_end() -> None:    
     rotate(END)
 
 def rotate_to_start() -> None:
@@ -44,9 +29,15 @@ def rotate_to_start() -> None:
     
 if __name__ == '__main__':
     while True:
-        limit_switch.when_released = rotate_to_start
-        limit_switch.when_pressed = rotate_to_end
-
-        sleep(0.2)
-        print(f'{limit_switch.value}')
-
+        if limit_switch.is_pressed:
+            if should_open:
+                rotate_to_start()
+                sleep(DELAY)
+                print(f'Rotate To Start, {should_open=}')
+                should_open = False
+            else:
+                rotate_to_end()
+                sleep(DELAY)
+                print(f'Rotate To End, {should_open=}')
+                should_open = True
+                
